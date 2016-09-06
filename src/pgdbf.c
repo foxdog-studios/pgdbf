@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     int     optusequotedtablename = 0;
     int     optusetransaction = 1;
     int     optusetruncatetable = 0;
-    
+
     /* Describing the PostgreSQL table */
     char *tablename;
     char *baretablename;
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
                "  -e  use 'IF EXISTS' when dropping tables (PostgreSQL 8.2+) (default)\n"
                "  -E  do not use 'IF EXISTS' when dropping tables (PostgreSQL 8.1 and older)\n"
                "  -h  print this message and exit\n"
-               "  -i  ignore fields"
+               "  -i  ignore fields\n"
                "  -m  the name of the associated memo file (if necessary)\n"
                "  -n  use type 'NUMERIC' for NUMERIC fields (default)\n"
                "  -N  use type 'TEXT' for NUMERIC fields\n"
@@ -521,16 +521,20 @@ int main(int argc, char **argv) {
      * for a few additional output parameters.  This is an ugly loop that
      * does lots of stuff, but extracting it into two or more loops with the
      * same structure and the same switch-case block seemed even worse. */
-    if(optusecreatetable) printf("CREATE TABLE %s (", baretablename);
+    if (optusecreatetable) {
+        printf("CREATE TABLE %s (recno INTEGER, ", baretablename);
+    }
+
     printed = 0;
-    for(fieldnum = 0; fieldnum < fieldcount; fieldnum++) {
+
+    for (fieldnum = 0; fieldnum < fieldcount; fieldnum++) {
         if(optignorefields){
             for (i = 0; i<cnt; ++i){
                 //printf("%s\n", ignorefields[i].field);
                 if(strcmp(fieldnames[fieldnum],ignorefields[i].field) == 0)
                     fields[fieldnum].type = IGNORETYPE;
             }
-        } 
+        }
 
         if(fields[fieldnum].type == '0' || fields[fieldnum].type == IGNORETYPE) {
             continue;
@@ -662,18 +666,33 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Progress: 0");
         fflush(stderr);
     }
-    for(recordbase = 0; recordbase < littleint32_t(dbfheader.recordcount); recordbase += dbfbatchsize) {
+
+    unsigned int recno = 0;
+
+    for (recordbase = 0;
+         recordbase < littleint32_t(dbfheader.recordcount);
+         recordbase += dbfbatchsize)
+    {
         blocksread = fread(inputbuffer, littleint16_t(dbfheader.recordlength), dbfbatchsize, dbffile);
-        if(blocksread != dbfbatchsize &&
-           recordbase + blocksread < littleint32_t(dbfheader.recordcount)) {
+
+        if (blocksread != dbfbatchsize &&
+            recordbase + blocksread < littleint32_t(dbfheader.recordcount)) {
             exitwitherror("Unable to read an entire record", 1);
         }
+
         for(batchindex = 0; batchindex < blocksread; batchindex++) {
             bufoffset = inputbuffer + littleint16_t(dbfheader.recordlength) * batchindex;
+
+            // Include deleted records in recno, as dBASE III does.
+            recno++;
+
             /* Skip deleted records */
-            if(bufoffset[0] == '*') {
+            if (bufoffset[0] == '*') {
                 continue;
             }
+
+            printf("%d\t", recno);
+
             bufoffset++;
 
             printedfieldcount = 0;
