@@ -20,8 +20,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -31,7 +32,7 @@
 
 #include "pgdbf.h"
 
-#define STANDARDOPTS "cCdDeEhm:i:nNpPqQtTuU"
+#define STANDARDOPTS "cCdDeEhm:i:nNr:pPqQtTuU"
 
 int main(int argc, char **argv) {
     /* Describing the DBF file */
@@ -112,6 +113,10 @@ int main(int argc, char **argv) {
     int     optusequotedtablename = 0;
     int     optusetransaction = 1;
     int     optusetruncatetable = 0;
+
+    // recno columns options
+    int opt_recno_column = false;
+    char *recno_column_name = NULL;
 
     /* Describing the PostgreSQL table */
     char *tablename;
@@ -195,6 +200,12 @@ int main(int argc, char **argv) {
         case 'Q':
             optusequotedtablename = 0;
             break;
+
+        case 'r':
+            opt_recno_column = true;
+            recno_column_name = optarg;
+            break;
+
 #if defined(HAVE_ICONV)
         case 's':
             optinputcharset = optarg;
@@ -232,9 +243,9 @@ int main(int argc, char **argv) {
     if(optexitcode != -1) {
         printf(
 #if defined(HAVE_ICONV)
-               "Usage: %s [-cCdDeEhtTuU] [-s encoding] [-m memofilename] [-i fieldname1,fieldname2,fieldnameN] filename [indexcolumn ...]\n"
+               "Usage: %s [-cCdDeEhtTuU] [-r recno] [-s encoding] [-m memofilename] [-i fieldname1,fieldname2,fieldnameN] filename [indexcolumn ...]\n"
 #else
-               "Usage: %s [-cCdDeEhtTuU] [-m memofilename] [-i fieldname1,fieldname2,fieldnameN] filename [indexcolumn ...]\n"
+               "Usage: %s [-cCdDeEhtTuU] [-m memofilename] [-r recno] [-i fieldname1,fieldname2,fieldnameN] filename [indexcolumn ...]\n"
 #endif
                "Convert the named XBase file into PostgreSQL format\n"
                "\n"
@@ -249,6 +260,7 @@ int main(int argc, char **argv) {
                "  -m  the name of the associated memo file (if necessary)\n"
                "  -n  use type 'NUMERIC' for NUMERIC fields (default)\n"
                "  -N  use type 'TEXT' for NUMERIC fields\n"
+               "  -r  include a recno column with given name\n"
                "  -p  show a progress bar during processing\n"
                "  -P  do not show a progress bar\n"
                "  -q  enclose the table name in quotation marks whenever used in statements\n"
@@ -522,7 +534,11 @@ int main(int argc, char **argv) {
      * does lots of stuff, but extracting it into two or more loops with the
      * same structure and the same switch-case block seemed even worse. */
     if (optusecreatetable) {
-        printf("CREATE TABLE %s (recno INTEGER, ", baretablename);
+        printf("CREATE TABLE %s (", baretablename);
+    }
+
+    if (opt_recno_column) {
+        printf("%s INTEGER, ", recno_column_name);
     }
 
     printed = 0;
@@ -691,7 +707,9 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            printf("%d\t", recno);
+            if (opt_recno_column) {
+                printf("%d\t", recno);
+            }
 
             bufoffset++;
 
