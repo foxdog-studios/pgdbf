@@ -260,11 +260,11 @@ int main(int argc, char **argv) {
                "  -m  the name of the associated memo file (if necessary)\n"
                "  -n  use type 'NUMERIC' for NUMERIC fields (default)\n"
                "  -N  use type 'TEXT' for NUMERIC fields\n"
-               "  -r  include a recno column with given name\n"
                "  -p  show a progress bar during processing\n"
                "  -P  do not show a progress bar\n"
                "  -q  enclose the table name in quotation marks whenever used in statements\n"
                "  -Q  do not enclose the table name in quotation marks (default)\n"
+               "  -r  include a recno column with given name\n"
 #if defined(HAVE_ICONV)
                "  -s  the encoding used in the file, to be converted to UTF-8\n"
 #endif
