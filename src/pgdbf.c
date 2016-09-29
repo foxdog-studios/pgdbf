@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
         if(optuseifexists) {
             printf(" IF EXISTS");
         }
-        printf(" %s; SET statement_timeout=0;\n", baretablename);
+        printf(" \"%s\"; SET statement_timeout=0;\n", baretablename);
     }
 
     /* Uniqify the XBase field names. It's possible to have multiple fields
@@ -534,11 +534,11 @@ int main(int argc, char **argv) {
      * does lots of stuff, but extracting it into two or more loops with the
      * same structure and the same switch-case block seemed even worse. */
     if (optusecreatetable) {
-        printf("CREATE TABLE %s (", baretablename);
+        printf("CREATE TABLE \"%s\" (", baretablename);
     }
 
     if (opt_recno_column) {
-        printf("%s INTEGER, ", recno_column_name);
+        printf("\"%s\" INTEGER, ", recno_column_name);
     }
 
     printed = 0;
@@ -568,12 +568,12 @@ int main(int argc, char **argv) {
             isreservedname = 0;
             for(i = 0; RESERVEDWORDS[i]; i++ ) {
                 if(!strcmp(fieldnames[fieldnum], RESERVEDWORDS[i])) {
-                    printf("%s_%s ", tablename, fieldnames[fieldnum]);
+                    printf("\"%s_%s\" ", tablename, fieldnames[fieldnum]);
                     isreservedname = 1;
                     break;
                 }
             }
-            if(!isreservedname) printf("%s ", fieldnames[fieldnum]);
+            if(!isreservedname) printf("\"%s\" ", fieldnames[fieldnum]);
         }
 
         switch(fields[fieldnum].type) {
@@ -657,11 +657,11 @@ int main(int argc, char **argv) {
 
     /* Truncate the table if requested */
     if(optusetruncatetable) {
-        printf("TRUNCATE TABLE %s;\n", baretablename);
+        printf("TRUNCATE TABLE \"%s\";\n", baretablename);
     }
 
     /* Get PostgreSQL ready to receive lots of input */
-    printf("\\COPY %s FROM STDIN\n", baretablename);
+    printf("\\COPY \"%s\" FROM STDIN\n", baretablename);
 
     dbfbatchsize = DBFBATCHTARGET / littleint16_t(dbfheader.recordlength);
     if(!dbfbatchsize) {
@@ -872,7 +872,7 @@ int main(int argc, char **argv) {
 
     /* Generate the indexes */
     for(i = optind + 1; i < argc; i++ ){
-        printf("CREATE INDEX %s_", tablename);
+        printf("CREATE INDEX \"%s_\"", tablename);
         for(s = argv[i]; *s; s++) {
             if(isalnum(*s)) {
                 putchar(*s);
@@ -885,7 +885,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        printf(" ON %s(%s);\n", baretablename, argv[i]);
+        printf(" ON \"%s\"(\"%s\");\n", baretablename, argv[i]);
     }
 
     free(tablename);
