@@ -269,9 +269,9 @@ static void safeprintbuf(const char *buf, const size_t inputsize) {
         return;
     }
 
-    /* Find the rightmost non-space, non-null character */
-    for(s = buf + inputsize - 1; s >= buf; s--) {
-        if(*s != ' ' && *s != '\0') {
+    /* Find the rightmost non-null character */
+    for (s = buf + inputsize - 1; s >= buf; s--) {
+        if (*s != '\0') {
             break;
         }
     }
