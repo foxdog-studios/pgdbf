@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
         if(optuseifexists) {
             printf(" IF EXISTS");
         }
-        printf(" \"%s\"; SET statement_timeout=0;\n", baretablename);
+        printf(" \"%s\" CASCADE; SET statement_timeout=0;\n", baretablename);
     }
 
     /* Uniqify the XBase field names. It's possible to have multiple fields
