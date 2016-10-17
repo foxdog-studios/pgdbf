@@ -538,7 +538,7 @@ int main(int argc, char **argv) {
     }
 
     if (opt_recno_column) {
-        printf("\"%s\" INTEGER, ", recno_column_name);
+        printf("\"%s\" INTEGER PRIMARY KEY, ", recno_column_name);
     }
 
     printed = 0;
