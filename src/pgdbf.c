@@ -563,17 +563,7 @@ int main(int argc, char **argv) {
         }
 
         if(optusecreatetable) {
-            /* If the fieldname is a reserved word, rename it to start with
-             * "tablename_" */
-            isreservedname = 0;
-            for(i = 0; RESERVEDWORDS[i]; i++ ) {
-                if(!strcmp(fieldnames[fieldnum], RESERVEDWORDS[i])) {
-                    printf("\"%s_%s\" ", tablename, fieldnames[fieldnum]);
-                    isreservedname = 1;
-                    break;
-                }
-            }
-            if(!isreservedname) printf("\"%s\" ", fieldnames[fieldnum]);
+            printf("\"%s\" ", fieldnames[fieldnum]);
         }
 
         switch(fields[fieldnum].type) {
